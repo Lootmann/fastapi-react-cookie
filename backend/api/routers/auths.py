@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from typing import Optional
+
+from fastapi import APIRouter, Cookie, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
 
@@ -75,3 +77,14 @@ def create_token(
     db.refresh(found)
 
     return token
+
+
+@router.post("/cookie", status_code=status.HTTP_200_OK)
+def create_cookie(response: Response):
+    response.set_cookie(key="fake_session_key", value="fake-cookie-state")
+    return {"message": "Come to the dark side, we have cookies :^)"}
+
+
+@router.get("/cookie", status_code=status.HTTP_200_OK)
+def get_cookie(fake_session_key: Optional[str] = Cookie(None)):
+    return {"fakeSessionKey": fake_session_key}

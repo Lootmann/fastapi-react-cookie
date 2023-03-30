@@ -104,3 +104,16 @@ class TestRefreshToken:
         old_access_token = headers["Authorization"][:7]
         new_access_token = resp.json()["access_token"]
         assert old_access_token != new_access_token
+
+
+class TestCookie:
+    def test_get_cookie(self, client: TestClient, login_fixture):
+        # create cookie
+        resp = client.post("/auth/cookie")
+        data = resp.json()
+
+        assert resp.status_code == status.HTTP_200_OK
+
+        resp = client.get("/auth/cookie")
+        data = resp.json()
+        print(data)
