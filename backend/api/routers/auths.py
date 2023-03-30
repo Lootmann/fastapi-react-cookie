@@ -80,16 +80,16 @@ def create_token(
     return token
 
 
-@router.get("/cookie", status_code=status.HTTP_200_OK)
-def create_cookie():
+@router.post("/cookie", response_model=dict, status_code=status.HTTP_200_OK)
+def create_cookie(response: Response):
     random_string = "".join(sample(ascii_letters, 10))
-    print(random_string)
-    return {
-        "message": "Come to the dark side, we have cookies :^)",
-        "token": "eyJ" + random_string,
-    }
+    response.set_cookie(key="access_token", value=random_string)
+
+    return {"message": "Come to the dark side, we have cookies :^)"}
 
 
-@router.post("/cookie", status_code=status.HTTP_200_OK)
-def get_cookie(fake_session_key: Optional[str] = Cookie(None)):
-    return {"fakeSessionKey": fake_session_key}
+@router.get("/cookie", status_code=status.HTTP_200_OK)
+def get_cookie(access_token: Optional[str] = Cookie(None)):
+    if not access_token:
+        raise AuthException.raise401(detail="Access Token is invalid (No Cookie D:)")
+    return {"access_token": access_token}
