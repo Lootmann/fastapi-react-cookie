@@ -1,3 +1,5 @@
+from random import randint, sample
+from string import ascii_letters
 from typing import Optional
 
 from fastapi import APIRouter, Cookie, Depends, Response, status
@@ -29,7 +31,6 @@ def refresh_access_token(
     """
     # NOTE: check refresh token, when refresh is not expired, re-create access_token
     if auth_api.check_token(token.refresh_token):
-
         # NOTE: check_token already checked token has username
         username = auth_api.get_username(token.refresh_token)
 
@@ -79,12 +80,16 @@ def create_token(
     return token
 
 
-@router.post("/cookie", status_code=status.HTTP_200_OK)
-def create_cookie(response: Response):
-    response.set_cookie(key="fake_session_key", value="fake-cookie-state")
-    return {"message": "Come to the dark side, we have cookies :^)"}
-
-
 @router.get("/cookie", status_code=status.HTTP_200_OK)
+def create_cookie():
+    random_string = "".join(sample(ascii_letters, 10))
+    print(random_string)
+    return {
+        "message": "Come to the dark side, we have cookies :^)",
+        "token": "eyJ" + random_string,
+    }
+
+
+@router.post("/cookie", status_code=status.HTTP_200_OK)
 def get_cookie(fake_session_key: Optional[str] = Cookie(None)):
     return {"fakeSessionKey": fake_session_key}
