@@ -1,32 +1,34 @@
+import axios from "axios";
 import { axiosApi } from "./apis";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { useEffect } from "react";
 
 function App() {
-  const [cookies, setCookie, removeCookie] = useCookies(["fake_session_key"]);
+  const [cookies, setCookie, removeCookie] = useCookies(["access_token"]);
 
   useEffect(() => {
     console.log("* Update");
     console.log(cookies);
   }, []);
 
-  function sendCookieToAPi() {
-    console.log(">>> getCookie");
-    console.log(cookies);
-    console.log(cookies.fake_session_key);
+  /**
+   * post to /auth/cookie
+   *
+   * Backend(FastAPI) set cookie using random_string
+   * key is "access_token"
+   *
+   */
+  function post() {
+    console.log(">>>>>>>>>>>>>>>>>> getCookieFromAPI");
 
-    // TODO: not working sending cookie
     axiosApi
-      .post("/auth/cookie", {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: `fake_session_key=${cookies.fake_session_key}`,
-        },
-      })
+      .post("/auth/cookie")
       .then((resp) => {
-        console.log(resp);
-        console.log(resp.data);
+        if (resp.status == 200) {
+          console.log(resp);
+        } else {
+          console.log("wow");
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -34,23 +36,21 @@ function App() {
   }
 
   /**
-   * getCookieFromAPI
+   * get a cookie from Backend
    *
-   * React(gimme a cookie)     -> FastAPI Request: GET /auth/cookie
-   * FastAPI(creates a cookie) -> React
+   * React send cookie to react
+   * FastAPI get a cookie named 'access_token'
+   * when this headers has no 'access_token', raise 401 Error
    */
-  function getCookieFromAPI() {
-    console.log(">>> getCookieFromAPI");
-    // get fastapi token
+  function get() {
+    console.log(">>>>>>>>>>>>>>>>>> getCookie");
 
     axiosApi
       .get("/auth/cookie")
       .then((resp) => {
-        if (resp.status == 200) {
-          console.log(resp);
-          console.log(resp.data);
-          setCookie("fake_session_key", resp.data.token);
-        }
+        console.log("* You Got It D:");
+        console.log(resp.data);
+        setCookie("access_token", resp.data.access_token);
       })
       .catch((error) => {
         console.log(error);
@@ -59,26 +59,24 @@ function App() {
 
   return (
     <CookiesProvider>
-      <div className="min-h-screen bg-zinc-900 text-zinc-200 text-xl">
+      <div className="min-h-screen bg-zinc-900 text-zinc-200 text-2xl">
         <div className="p-4">
           <h1 className="text-2xl">Set Cookies</h1>
         </div>
 
-        <div className="p-4">
+        <div className="p-4 flex gap-10">
           <button
-            onClick={sendCookieToAPi}
+            onClick={get}
             className="px-2 py-1 bg-slate-300 text-slate-800 rounded-md"
           >
-            Send My Cookie to Backend Server
+            GET
           </button>
-        </div>
 
-        <div className="p-4">
           <button
-            onClick={getCookieFromAPI}
-            className="px-2 py-1 bg-slate-300 text-slate-800 rounded-md"
+            onClick={post}
+            className="px-2 py-1 bg-pink-800 text-slate-300 rounded-md"
           >
-            Get Cookie From API - Cookie has JWT Token
+            POST
           </button>
         </div>
       </div>
